@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.kabanfriends.lessutilities.LessUtilities;
+import io.github.kabanfriends.lessutilities.screen.CPUUsageText;
 import io.github.kabanfriends.lessutilities.utils.ItemUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.ChatFormatting;
@@ -17,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import javax.security.auth.callback.Callback;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -88,8 +90,11 @@ public class MixinGui {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
-
+    @Inject(method = "renderEffects", at = @At("HEAD"))
+    public void onRenderEffects(PoseStack stack, CallbackInfo ci) {
+        CPUUsageText.onRender(stack);
     }
 
 }
