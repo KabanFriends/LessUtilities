@@ -38,7 +38,12 @@ public class MixinClientPacketListener {
 
     @Inject(method = "setActionBarText", at = @At("HEAD"))
     public void onActionBar(ClientboundSetActionBarTextPacket packet, CallbackInfo ci) {
-        if (LessUtilities.MC.player == null) return;
+        if (!RenderSystem.isOnRenderThread()) {
+            return;
+        }
+        if (LessUtilities.MC.player == null) {
+            return;
+        }
         if (packet.getText().getString().matches("^CPU Usage: \\[▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮\\] \\(.*%\\)$")) {
             CPUUsageText.updateCPU(packet);
             ci.cancel();
