@@ -12,7 +12,7 @@ public class ItemUtils {
 
     public static void giveCreativeItem(ItemStack item, boolean preferHand) {
         Minecraft mc = LessUtilities.MC;
-        NonNullList<ItemStack> mainInventory = mc.player.inventoryMenu.getItems();
+        NonNullList<ItemStack> mainInventory = mc.player.getInventory().items;
 
         if (preferHand) {
             if (mc.player.getMainHandItem().isEmpty()) {
@@ -23,8 +23,8 @@ public class ItemUtils {
 
         for (int index = 0; index < mainInventory.size(); index++) {
             ItemStack i = mainInventory.get(index);
-            ItemStack compareItem = i.copy();
-            compareItem.setCount(item.getCount());
+            System.out.println(index);
+            System.out.println(i.getItem());
             if (i.getItem() == Items.AIR) {
                 if (index < 9)
                     LessUtilities.MC.gameMode.handleCreativeModeItemAdd(item, index + 36);
