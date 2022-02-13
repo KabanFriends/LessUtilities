@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.kabanfriends.lessutilities.commands.arguments.ArgBuilder;
 import io.github.kabanfriends.lessutilities.commands.Command;
+import io.github.kabanfriends.lessutilities.commands.arguments.types.FileArgumentType;
 import io.github.kabanfriends.lessutilities.schem.Schematic;
 import io.github.kabanfriends.lessutilities.schem.loaders.LitematicaLoader;
 import io.github.kabanfriends.lessutilities.schem.loaders.MCEditSchematicLoader;
@@ -40,7 +41,7 @@ public class SchemCommand extends Command {
 
     public LiteralArgumentBuilder<FabricClientCommandSource> subcommand(Minecraft mc, LiteralArgumentBuilder<FabricClientCommandSource> literal) {
         literal.then(ArgBuilder.literal("load")
-                .then(ArgBuilder.argument("filepath", StringArgumentType.greedyString())
+                .then(ArgBuilder.argument("filepath", FileArgumentType.folder(new File("schematic"), true))
                         .executes(ctx -> {
                             if (mc.player.isCreative()) {
                                 String arg = StringArgumentType.getString(ctx, "filepath");
