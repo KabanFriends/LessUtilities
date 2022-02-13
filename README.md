@@ -1,9 +1,9 @@
-# Fabric Example Mod
+# LessUtilities
+This is basically [CodeUtilities](https://codeutilities.github.io/) but I ported only the features I mainly use to Minecraft 1.18.1:
+- /nbs
+- /schem
+- Side Chat
+- Variable Scope View
+- Item API (Planned)
 
-## Setup
-
-For setup instructions please see the [fabric wiki page](https://fabricmc.net/wiki/tutorial:setup) that relates to the IDE that you are using.
-
-## License
-
-This template is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
+Use `gradlew build` to build the mod
