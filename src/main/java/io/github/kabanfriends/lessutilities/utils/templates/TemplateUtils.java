@@ -3,6 +3,7 @@ package io.github.kabanfriends.lessutilities.utils.templates;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.github.kabanfriends.lessutilities.LessUtilities;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
@@ -18,12 +19,12 @@ public class TemplateUtils {
         applyRawTemplateNBT(stack, new TextComponent(name), author, codeData, VERSION);
     }
 
-    public static void applyRawTemplateNBT(ItemStack stack, TextComponent name, String author, String codeData, int version) {
+    public static void applyRawTemplateNBT(ItemStack stack, Component name, String author, String codeData, int version) {
         CompoundTag publicBukkitNBT = new CompoundTag();
         CompoundTag itemNBT = new CompoundTag();
         CompoundTag codeNBT = new CompoundTag();
 
-        codeNBT.putString("name", name.getText());
+        codeNBT.putString("name", name.getString());
         codeNBT.putString("author", author);
         codeNBT.putString("code", codeData);
         codeNBT.putInt("version", version);
