@@ -78,7 +78,7 @@ public abstract class MixinChatComponent {
     public abstract int getWidth();
 
     @Shadow
-    public abstract void resetChatScroll();
+    public abstract void clearMessages(boolean clearRecent);
 
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private void render(PoseStack stack, int tickDelta, CallbackInfo ci) {
@@ -109,7 +109,7 @@ public abstract class MixinChatComponent {
         int newSideChatWidth = getSideChatWidth();
         if (newSideChatWidth != oldSideChatWidth) {
             oldSideChatWidth = newSideChatWidth;
-            resetChatScroll();
+            clearMessages(false);
         }
 
         // will apologise - most code is taken from deobfuscated minecraft jar
