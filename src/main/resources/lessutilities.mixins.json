@@ -8,6 +8,7 @@
   "client": [
     "MixinChatComponent",
     "MixinChatScreen",
+    "MixinClientPacketListener",
     "MixinGui",
     "MixinMinecraft"
   ],
