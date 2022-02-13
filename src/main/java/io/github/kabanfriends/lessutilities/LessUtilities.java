@@ -2,6 +2,7 @@ package io.github.kabanfriends.lessutilities;
 
 import io.github.kabanfriends.lessutilities.commands.CommandHandler;
 import io.github.kabanfriends.lessutilities.config.Config;
+import io.github.kabanfriends.lessutilities.websocket.SocketHandler;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
@@ -28,5 +29,6 @@ public class LessUtilities implements ModInitializer {
 
 		AutoConfig.register(Config.class, GsonConfigSerializer::new);
 		new CommandHandler();
+		new SocketHandler();
 	}
 }

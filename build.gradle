@@ -33,6 +33,9 @@ dependencies {
 		exclude(group: "net.fabricmc.fabric-api")
 	}
 
+	compileOnly 'org.java-websocket:Java-WebSocket:1.5.2'
+	include 'org.java-websocket:Java-WebSocket:1.5.2'
+
 	modApi "io.github.prospector:modmenu:1.16.9"
 	modRuntimeOnly "io.github.prospector:modmenu:1.16.9"
 }
