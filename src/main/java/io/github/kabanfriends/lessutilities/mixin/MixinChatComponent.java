@@ -292,8 +292,8 @@ public abstract class MixinChatComponent {
         );
     }
 
-    @Inject(method = "resetChatScroll", at = @At("HEAD"))
-    private void resetMessages(CallbackInfo ci) {
+    @Inject(method = "clearMessages", at = @At("HEAD"))
+    private void clearMessages(CallbackInfo ci) {
         sideVisibleMessages.clear();
     }
 
