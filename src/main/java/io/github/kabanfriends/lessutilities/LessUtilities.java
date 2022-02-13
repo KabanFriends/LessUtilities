@@ -1,6 +1,9 @@
 package io.github.kabanfriends.lessutilities;
 
 import io.github.kabanfriends.lessutilities.commands.CommandHandler;
+import io.github.kabanfriends.lessutilities.config.Config;
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.client.Minecraft;
 import org.slf4j.Logger;
@@ -23,6 +26,7 @@ public class LessUtilities implements ModInitializer {
 	public void onInitialize() {
 		LOGGER.info("Initializing LessUtilities...");
 
+		AutoConfig.register(Config.class, GsonConfigSerializer::new);
 		new CommandHandler();
 	}
 }

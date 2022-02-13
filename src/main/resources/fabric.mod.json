@@ -19,6 +19,12 @@
   "entrypoints": {
     "main": [
       "io.github.kabanfriends.lessutilities.LessUtilities"
+    ],
+    "client": [
+      "io.github.kabanfriends.lessutilities.keybinds.Keybinds"
+    ],
+    "modmenu": [
+      "io.github.kabanfriends.lessutilities.config.ModMenuIntegration"
     ]
   },
   "mixins": [
@@ -29,7 +35,7 @@
     "fabricloader": ">=0.12.0",
     "fabric": "*",
     "minecraft": "1.18.x",
-    "java": ">=17"
+    "fabric-key-binding-api-v1": "*"
   },
   "suggests": {
     "another-mod": "*"

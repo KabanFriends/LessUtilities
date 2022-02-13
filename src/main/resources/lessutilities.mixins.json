@@ -6,6 +6,10 @@
   "mixins": [
   ],
   "client": [
+    "MixinChatComponent",
+    "MixinChatScreen",
+    "MixinGui",
+    "MixinMinecraft"
   ],
   "injectors": {
     "defaultRequire": 1
