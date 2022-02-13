@@ -41,6 +41,7 @@ public class MixinClientPacketListener {
         if (LessUtilities.MC.player == null) return;
         if (packet.getText().getString().matches("^CPU Usage: \\[▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮\\] \\(.*%\\)$")) {
             CPUUsageText.updateCPU(packet);
+            ci.cancel();
         }
     }
 }
