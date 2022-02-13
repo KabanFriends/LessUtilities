@@ -68,7 +68,7 @@ public class NBSCommand extends Command {
                                     if (mc.player.isCreative()) {
                                         String filename = StringArgumentType.getString(ctx, "filename");
                                         String childName = filename + (filename.endsWith(".nbs") ? "" : ".nbs");
-                                        File file = new File("nbs");
+                                        File file = new File("nbs", childName);
 
                                         if (file.exists()) {
                                             loadNbs(file, childName);
