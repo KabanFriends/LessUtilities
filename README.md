@@ -4,6 +4,6 @@ This is basically [CodeUtilities](https://codeutilities.github.io/) but I ported
 - /schem
 - Side Chat
 - Variable Scope View
-- Item API (Planned)
+- Item API
 
 Use `gradlew build` to build the mod
