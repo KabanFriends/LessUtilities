@@ -333,7 +333,7 @@ public abstract class MixinChatComponent {
     }
 
     @Inject(method = "scrollChat", at = @At("TAIL"))
-    private void scrollChat(double amount, CallbackInfo ci) {
+    private void scrollChat(int amount, CallbackInfo ci) {
         sideScrolledLines = (int) ((double) this.chatScrollbarPos + amount);
         int i = this.sideVisibleMessages.size();
         if (sideScrolledLines > i - this.getLinesPerPage()) {
