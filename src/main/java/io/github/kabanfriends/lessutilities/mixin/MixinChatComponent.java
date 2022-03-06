@@ -105,13 +105,6 @@ public abstract class MixinChatComponent {
     private int renderChat(PoseStack stack, int tickDelta,
                            List<GuiMessage<FormattedCharSequence>> visibleMessages, int displayX, int width,
                            int scrolledLines) {
-        // reset chat (re-allign all text) whenever calculated size for side chat changes
-        int newSideChatWidth = getSideChatWidth();
-        if (newSideChatWidth != oldSideChatWidth) {
-            oldSideChatWidth = newSideChatWidth;
-            clearMessages(false);
-        }
-
         // will apologise - most code is taken from deobfuscated minecraft jar
         // have attempted to make it as readable as possible but some lines idk man no clue
         int visibleLineCount = this.getLinesPerPage();
