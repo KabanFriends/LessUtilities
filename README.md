@@ -7,4 +7,12 @@ This is basically [CodeUtilities](https://codeutilities.github.io/) but I ported
 - LagSlayer HUD
 - Item API
 
-Use `gradlew build` to build the mod
+## Required mods
+
+- Cloth config API [[Link]](https://www.curseforge.com/minecraft/mc-mods/cloth-config/)
+
+## Download
+
+https://github.com/KabanFriends/LessUtilities/releases/latest
+
+Or, if you want to build it yourself: Use `gradlew build` to build the mod
