@@ -9,7 +9,7 @@ This is basically [CodeUtilities](https://codeutilities.github.io/) but I ported
 
 ## Required mods
 
-- Cloth config API [[Link]](https://www.curseforge.com/minecraft/mc-mods/cloth-config/)
+- Cloth config API [[Link]](https://modrinth.com/mod/cloth-config)
 
 ## Download
 
