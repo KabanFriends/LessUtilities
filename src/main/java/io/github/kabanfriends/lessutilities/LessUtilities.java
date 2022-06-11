@@ -6,6 +6,7 @@ import io.github.kabanfriends.lessutilities.websocket.SocketHandler;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.minecraft.client.Minecraft;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,8 @@ public class LessUtilities implements ModInitializer {
 		LOGGER.info("Initializing LessUtilities...");
 
 		AutoConfig.register(Config.class, GsonConfigSerializer::new);
-		new CommandHandler();
 		new SocketHandler();
+
+		ClientCommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess) -> new CommandHandler(dispatcher)));
 	}
 }

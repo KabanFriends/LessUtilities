@@ -2,9 +2,7 @@ package io.github.kabanfriends.lessutilities.utils.templates;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.github.kabanfriends.lessutilities.LessUtilities;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 
@@ -16,7 +14,7 @@ public class TemplateUtils {
     public static final int VERSION = 1;
 
     public static void applyRawTemplateNBT(ItemStack stack, String name, String author, String codeData) {
-        applyRawTemplateNBT(stack, new TextComponent(name), author, codeData, VERSION);
+        applyRawTemplateNBT(stack, Component.literal(name), author, codeData, VERSION);
     }
 
     public static void applyRawTemplateNBT(ItemStack stack, Component name, String author, String codeData, int version) {

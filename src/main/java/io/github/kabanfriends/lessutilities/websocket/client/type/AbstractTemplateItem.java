@@ -6,7 +6,6 @@ import io.github.kabanfriends.lessutilities.LessUtilities;
 import io.github.kabanfriends.lessutilities.utils.templates.TemplateUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -29,9 +28,9 @@ public abstract class AbstractTemplateItem extends SocketItem {
             author = LessUtilities.MC.player.getGameProfile().getName();
         }
         if (templateObject.has("name")) {
-            name = new TextComponent(templateObject.get("name").getAsString());
+            name = Component.literal(templateObject.get("name").getAsString());
         } else {
-            name = new TextComponent("Imported Code Template").withStyle((style) -> style.withColor(TextColor.fromRgb(11163135)));
+            name = Component.literal("Imported Code Template").withStyle((style) -> style.withColor(TextColor.fromRgb(11163135)));
         }
         int version;
         if (templateObject.has("version")) {

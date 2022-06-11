@@ -16,7 +16,6 @@ import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.ComponentRenderUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import org.spongepowered.asm.mixin.Final;
@@ -77,9 +76,6 @@ public abstract class MixinChatComponent {
     @Shadow
     public abstract int getWidth();
 
-    @Shadow
-    public abstract void clearMessages(boolean clearRecent);
-
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private void render(PoseStack stack, int tickDelta, CallbackInfo ci) {
 
@@ -119,11 +115,11 @@ public abstract class MixinChatComponent {
             stack.translate(4.0D, 8.0D, 0.0D);
             stack.scale(d, d, 1.0F);
             double opacity =
-                    this.minecraft.options.chatOpacity * 0.8999999761581421D + 0.10000000149011612D;
-            double backgroundOpacity = this.minecraft.options.textBackgroundOpacity;
-            double lineSpacing = 9.0D * (this.minecraft.options.chatLineSpacing + 1.0D);
-            double lineSpacing2 = -8.0D * (this.minecraft.options.chatLineSpacing + 1.0D)
-                    + 4.0D * this.minecraft.options.chatLineSpacing;
+                    this.minecraft.options.chatOpacity().get() * 0.8999999761581421D + 0.10000000149011612D;
+            double backgroundOpacity = this.minecraft.options.textBackgroundOpacity().get();
+            double lineSpacing = 9.0D * (this.minecraft.options.chatLineSpacing().get() + 1.0D);
+            double lineSpacing2 = -8.0D * (this.minecraft.options.chatLineSpacing().get() + 1.0D)
+                    + 4.0D * this.minecraft.options.chatLineSpacing().get();
 
             for (int i = 0; i + scrolledLines < visibleMessages.size() && i < visibleLineCount;
                  ++i) {
@@ -172,8 +168,8 @@ public abstract class MixinChatComponent {
         stack.translate(2.0F, 8.0F, 0.0F);
         stack.scale(chatScale, chatScale, 1.0F);
         double opacity =
-                this.minecraft.options.chatOpacity * 0.8999999761581421D + 0.10000000149011612D;
-        double backgroundOpacity = this.minecraft.options.textBackgroundOpacity;
+                this.minecraft.options.chatOpacity().get() * 0.8999999761581421D + 0.10000000149011612D;
+        double backgroundOpacity = this.minecraft.options.textBackgroundOpacity().get();
 
         if (!this.chatQueue.isEmpty()) {
             int m = (int) (128.0D * opacity);
@@ -184,7 +180,7 @@ public abstract class MixinChatComponent {
             RenderSystem.enableBlend();
             stack.translate(0.0D, 0.0D, 50.0D);
             this.minecraft.font.drawShadow(stack,
-                    new TranslatableComponent("chat.queue", this.chatQueue.size()), 0.0F, 1.0F,
+                    Component.translatable("chat.queue", this.chatQueue.size()), 0.0F, 1.0F,
                     16777215 + (m << 24));
             stack.popPose();
             RenderSystem.disableBlend();
@@ -301,7 +297,7 @@ public abstract class MixinChatComponent {
             double adjustedY = (double) this.minecraft.getWindow().getGuiScaledHeight() - y - 40.0D;
             adjustedX = Mth.floor(adjustedX / scale);
             adjustedY = Mth.floor(
-                    adjustedY / (scale * (this.minecraft.options.chatLineSpacing + 1.0D)));
+                    adjustedY / (scale * (this.minecraft.options.chatLineSpacing().get() + 1.0D)));
             if (!(adjustedX < 0.0D) && !(adjustedY < 0.0D)) {
                 int size = Math.min(this.getLinesPerPage(), this.sideVisibleMessages.size());
                 if (adjustedX <= (double) Mth.floor(
