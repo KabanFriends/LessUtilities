@@ -7,6 +7,7 @@ import me.shedaniel.autoconfig.ConfigData;
 @me.shedaniel.autoconfig.annotation.Config(name = LessUtilities.MOD_ID)
 public class Config implements ConfigData {
 
+    public boolean useSideChat = true;
     public int sideChatWidth = 0;
 
     public static Config getConfig() {
