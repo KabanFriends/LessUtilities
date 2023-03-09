@@ -2,22 +2,23 @@ package io.github.kabanfriends.lessutilities.mixin;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.List;
-import java.util.stream.Collectors;
+
+import java.util.*;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.kabanfriends.lessutilities.config.Config;
 import io.github.kabanfriends.lessutilities.sidedchat.ChatRule;
 import net.minecraft.client.GuiMessage;
+import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.ComponentRenderUtils;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -30,28 +31,28 @@ import static net.minecraft.client.gui.GuiComponent.fill;
 
 @Mixin(ChatComponent.class)
 public abstract class MixinChatComponent {
+    @Shadow
+    @Final
+    private static Logger LOGGER;
 
-    private final List<GuiMessage<FormattedCharSequence>> sideVisibleMessages = Lists.newArrayList();
+    private final List<GuiMessage.Line> sideVisibleMessages = Lists.newArrayList();
+
     @Shadow
     @Final
     private Minecraft minecraft;
-    @Shadow
-    private int chatScrollbarPos;
-    @Shadow
-    @Final
-    private final List<GuiMessage<FormattedCharSequence>> trimmedMessages = Lists.newArrayList();
-    @Shadow
-    @Final
-    private Deque<Component> chatQueue;
-    @Shadow
-    private boolean newMessageSinceScroll;
-    private int oldSideChatWidth = -1;
-    private int sideScrolledLines;
 
     @Shadow
-    public static int getWidth(double widthOption) {
-        return 0;
-    }
+    private int chatScrollbarPos;
+
+    @Shadow
+    @Final
+    private List<GuiMessage.Line> trimmedMessages;
+
+    @Shadow
+    private boolean newMessageSinceScroll;
+
+    private int oldSideChatWidth = -1;
+    private int sideScrolledLines;
 
     @Shadow
     private static double getTimeFactor(int age) {
@@ -65,9 +66,6 @@ public abstract class MixinChatComponent {
     protected abstract boolean isChatHidden();
 
     @Shadow
-    protected abstract void processPendingMessages();
-
-    @Shadow
     public abstract double getScale();
 
     @Shadow
@@ -76,15 +74,36 @@ public abstract class MixinChatComponent {
     @Shadow
     public abstract int getWidth();
 
-    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
-    private void render(PoseStack stack, int tickDelta, CallbackInfo ci) {
+    @Shadow
+    public abstract void rescaleChat();
 
-        this.processPendingMessages();
-        int renderedLines = renderChat(stack, tickDelta, trimmedMessages, 0, getWidth(),
-                chatScrollbarPos);
-        renderChat(stack, tickDelta, sideVisibleMessages, getSideChatStartX(),
-                getSideChatWidth(), sideScrolledLines);
-        renderOthers(stack, renderedLines);
+    @Shadow
+    public abstract int getLineHeight();
+
+    @Shadow
+    public abstract int getTagIconLeft(GuiMessage.Line line);
+
+    @Shadow
+    public abstract int getMessageEndIndexAt(double d, double e);
+
+    @Shadow
+    public abstract double screenToChatX(double d);
+
+    @Shadow
+    public abstract double screenToChatY(double d);
+
+    @Shadow
+    public abstract void drawTagIcon(PoseStack poseStack, int x, int y, GuiMessageTag.Icon icon);
+
+    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
+    private void render(PoseStack poseStack, int tickDelta, int j, int k, CallbackInfo ci) {
+        if (!this.isChatHidden()) {
+            int renderedLines = renderChat(poseStack, tickDelta, j, k, trimmedMessages, 0, getWidth(),
+                    chatScrollbarPos, true);
+            renderChat(poseStack, tickDelta, j, k, sideVisibleMessages, getSideChatStartX(),
+                    getSideChatWidth(), sideScrolledLines, false);
+            renderOthers(poseStack, renderedLines);
+        }
         ci.cancel();
     }
 
@@ -98,97 +117,118 @@ public abstract class MixinChatComponent {
      * @return The amount of lines actually rendered. Other parts of rendering need to know this
      */
     @SuppressWarnings("deprecation")
-    private int renderChat(PoseStack stack, int tickDelta,
-                           List<GuiMessage<FormattedCharSequence>> visibleMessages, int displayX, int width,
-                           int scrolledLines) {
-        // will apologise - most code is taken from deobfuscated minecraft jar
-        // have attempted to make it as readable as possible but some lines idk man no clue
-        int visibleLineCount = this.getLinesPerPage();
-        int visibleMessagesSize = visibleMessages.size();
+    private int renderChat(PoseStack poseStack, int i, int j, int k, List<GuiMessage.Line> visibleMessages, int displayX, int width, int scrolledLines, boolean renderTags) {
+        // reset chat (re-allign all text) whenever calculated size for side chat changes
+        int newSideChatWidth = getSideChatWidth();
+        if (newSideChatWidth != oldSideChatWidth) {
+            oldSideChatWidth = newSideChatWidth;
+            rescaleChat();
+        }
+
+        int l = this.getLinesPerPage();
+        int m = visibleMessages.size();
         int renderedLines = 0;
-        if (visibleMessagesSize > 0) {
-            boolean chatFocused = this.isChatFocused();
+        if (m > 0) {
+            boolean bl = this.isChatFocused();
+            float f = (float)this.getScale();
+            int n = Mth.ceil((float)width / f);
+            int o = this.minecraft.getWindow().getGuiScaledHeight();
+            poseStack.pushPose();
+            poseStack.scale(f, f, 1.0F);
+            poseStack.translate(4.0F, 0.0F, 0.0F);
+            int p = Mth.floor((float)(o - 40) / f);
+            int q = this.getMessageEndIndexAt(this.screenToChatX(j), this.screenToChatY(k));
+            double d = this.minecraft.options.chatOpacity().get();
+            double e = this.minecraft.options.textBackgroundOpacity().get();
+            double g = this.minecraft.options.chatLineSpacing().get();
+            int r = this.getLineHeight();
+            int s = (int)Math.round(-8.0 * (g + 1.0) + 4.0 * g);
 
-            float d = (float)this.getScale();
-            int k = Mth.ceil((double) width / d);
-            stack.pushPose();
-            stack.translate(4.0D, 8.0D, 0.0D);
-            stack.scale(d, d, 1.0F);
-            double opacity =
-                    this.minecraft.options.chatOpacity().get() * 0.8999999761581421D + 0.10000000149011612D;
-            double backgroundOpacity = this.minecraft.options.textBackgroundOpacity().get();
-            double lineSpacing = 9.0D * (this.minecraft.options.chatLineSpacing().get() + 1.0D);
-            double lineSpacing2 = -8.0D * (this.minecraft.options.chatLineSpacing().get() + 1.0D)
-                    + 4.0D * this.minecraft.options.chatLineSpacing().get();
-
-            for (int i = 0; i + scrolledLines < visibleMessages.size() && i < visibleLineCount;
-                 ++i) {
-                GuiMessage<FormattedCharSequence> chatHudLine = visibleMessages.get(i + scrolledLines);
-                if (chatHudLine != null) {
-                    int ticksSinceCreation = tickDelta - chatHudLine.getAddedTime();
-                    if (ticksSinceCreation < 200 || chatFocused) {
-                        double o =
-                                chatFocused ? 1.0D : getTimeFactor(ticksSinceCreation);
-                        int aa = (int) (255.0D * o * opacity);
-                        int ab = (int) (255.0D * o * backgroundOpacity);
+            int w;
+            int x;
+            int y;
+            int aa;
+            for(int u = 0; u + scrolledLines < visibleMessages.size() && u < l; ++u) {
+                int v = u + scrolledLines;
+                GuiMessage.Line line = visibleMessages.get(v);
+                if (line != null) {
+                    w = i - line.addedTime();
+                    if (w < 200 || bl) {
+                        double h = bl ? 1.0 : getTimeFactor(w);
+                        x = (int)(255.0 * h * d);
+                        y = (int)(255.0 * h * e);
                         ++renderedLines;
-                        if (aa > 3) {
-                            double s = (double) (-i) * lineSpacing;
-                            stack.pushPose();
-                            stack.translate(displayX, 0, 50.0D);
-                            fill(stack, -2, (int) (s - lineSpacing), k + 4, (int) s, ab << 24);
+                        if (x > 3) {
+                            boolean z = false;
+                            aa = p - u * r;
+                            int ab = aa + s;
+                            poseStack.pushPose();
+                            poseStack.translate(displayX, 0.0F, 50.0F);
+
+                            int fillX = renderTags ? -4 : -2;
+                            fill(poseStack, fillX, aa - r, 0 + n + 4 + 4, aa, y << 24);
+                            if (renderTags) {
+                                GuiMessageTag guiMessageTag = line.tag();
+                                if (guiMessageTag != null) {
+                                    int ac = guiMessageTag.indicatorColor() | x << 24;
+                                    fill(poseStack, -4, aa - r, -2, aa, ac);
+                                    if (v == q && guiMessageTag.icon() != null) {
+                                        int ad = this.getTagIconLeft(line);
+                                        Objects.requireNonNull(this.minecraft.font);
+                                        int ae = ab + 9;
+                                        this.drawTagIcon(poseStack, ad, ae, guiMessageTag.icon());
+                                    }
+                                }
+                            }
+
                             RenderSystem.enableBlend();
-                            stack.translate(0.0D, 0.0D, 50.0D);
-                            this.minecraft.font.drawShadow(stack, chatHudLine.getMessage(),
-                                    0.0F, (float) ((int) (s + lineSpacing2)), 16777215 + (aa << 24));
+                            poseStack.translate(0.0F, 0.0F, 50.0F);
+                            this.minecraft.font.drawShadow(poseStack, line.content(), 0.0F, (float)ab, 16777215 + (x << 24));
                             RenderSystem.disableBlend();
-                            stack.popPose();
+                            poseStack.popPose();
                         }
                     }
                 }
             }
-            // in case you're wondering, the splitting of the text by width is done as its received, not upon rendering
-
-            stack.popPose();
+            poseStack.popPose();
         }
         return renderedLines;
     }
 
     @SuppressWarnings("deprecation")
-    private void renderOthers(PoseStack stack, int renderedLines) {
+    private void renderOthers(PoseStack matrices, int renderedLines) {
         int visibleMessagesSize = this.trimmedMessages.size();
         if (visibleMessagesSize == 0) {
             return;
         }
         boolean chatFocused = this.isChatFocused();
 
-        float chatScale = (float)this.getScale();
+        float chatScale = (float) this.getScale();
         int k = Mth.ceil((double) this.getWidth() / chatScale);
-        stack.pushPose();
-        stack.translate(2.0F, 8.0F, 0.0F);
-        stack.scale(chatScale, chatScale, 1.0F);
-        double opacity =
-                this.minecraft.options.chatOpacity().get() * 0.8999999761581421D + 0.10000000149011612D;
+        matrices.pushPose();
+        matrices.scale(chatScale, chatScale, 1.0f);
+        matrices.translate(4.0F, 0.0F, 0.0F);
+        double opacity = this.minecraft.options.chatOpacity().get();
         double backgroundOpacity = this.minecraft.options.textBackgroundOpacity().get();
 
-        if (!this.chatQueue.isEmpty()) {
+        long queueSize = this.minecraft.getChatListener().queueSize();
+        if (queueSize > 0L) {
             int m = (int) (128.0D * opacity);
             int w = (int) (255.0D * backgroundOpacity);
-            stack.pushPose();
-            stack.translate(0.0D, 0.0D, 50.0D);
-            fill(stack, -2, 0, k + 4, 9, w << 24);
+            matrices.pushPose();
+            matrices.translate(0.0F, 0.0F, 50.0F);
+            fill(matrices, -2, 0, k + 4, 9, w << 24);
             RenderSystem.enableBlend();
-            stack.translate(0.0D, 0.0D, 50.0D);
-            this.minecraft.font.drawShadow(stack,
-                    Component.translatable("chat.queue", this.chatQueue.size()), 0.0F, 1.0F,
+            matrices.translate(0.0F, 0.0F, 50.0F);
+            this.minecraft.font.drawShadow(matrices,
+                    Component.translatable("chat.queue", queueSize), 0.0F, 1.0F,
                     16777215 + (m << 24));
-            stack.popPose();
+            matrices.popPose();
             RenderSystem.disableBlend();
         }
 
         if (chatFocused) {
             int v = 9;
-            stack.translate(-3.0F, 0.0F, 0.0F);
             int w = visibleMessagesSize * v + visibleMessagesSize;
             int x = renderedLines * v + renderedLines;
             int y = chatScrollbarPos * x / visibleMessagesSize;
@@ -196,17 +236,18 @@ public abstract class MixinChatComponent {
             if (w != x) {
                 int aa = y > 0 ? 170 : 96;
                 int ab = this.newMessageSinceScroll ? 13382451 : 3355562;
-                fill(stack, 0, -y, 2, -y - z, ab + (aa << 24));
-                fill(stack, 2, -y, 1, -y - z, 13421772 + (aa << 24));
+                int ac = k + 4;
+                fill(matrices, ac, -y, ac + 2, -y - z, ab + (aa << 24));
+                fill(matrices, ac, -y, ac + 1, -y - z, 13421772 + (aa << 24));
             }
         }
 
-        stack.popPose();
+        matrices.popPose();
     }
 
     private int getSideChatStartX() {
         return (int) ((this.minecraft.getWindow().getGuiScaledWidth() - getSideChatWidth())
-                / getSideChatScale()) - 6;
+                / getSideChatScale()) - 4;
     }
 
     private int getSideChatWidth() {
@@ -236,16 +277,17 @@ public abstract class MixinChatComponent {
     }
 
 
-    @Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;IIZ)V", at = @At("TAIL"), cancellable = true)
-    private void addMessage(Component message, int messageId, int timestamp, boolean refresh,
-                            CallbackInfo ci) {
+    @Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V", at = @At("TAIL"))
+    private void addMessage(Component component, MessageSignature messageSignature, int messageId, GuiMessageTag guiMessageTag, boolean refresh, CallbackInfo ci) {
         boolean matchedARule = false;
-        for (ChatRule chatRule : ChatRule.getChatRules()) {
-            // compare against all rules
-            if (chatRule.matches(message)) {
-                if (!matchedARule) {
-                    addToChat(message, messageId, timestamp);
-                    matchedARule = true;
+        if (Config.getConfig().useSideChat) {
+            for (ChatRule chatRule : ChatRule.getChatRules()) {
+                // compare against all rules
+                if (chatRule.matches(component)) {
+                    if (!matchedARule) {
+                        addToChat(component, messageId, guiMessageTag);
+                        matchedARule = true;
+                    }
                 }
             }
         }
@@ -253,7 +295,7 @@ public abstract class MixinChatComponent {
         // if matched rule, remove last from
         if (matchedARule) {
             int i = Mth.floor((double) this.getWidth() / this.getScale());
-            int addedMessageCount = ComponentRenderUtils.wrapComponents(message, i,
+            int addedMessageCount = ComponentRenderUtils.wrapComponents(component, i,
                     this.minecraft.font).size();
             // remove the last addedMessageCount messages from the visible messages
             // this has the effect of removing last message sent to main (to go to side instead)
@@ -262,27 +304,21 @@ public abstract class MixinChatComponent {
     }
 
     private void addToChat(Component message, int chatLineId,
-                           int updateCounter) {
+                           GuiMessageTag guiMessageTag) {
         int i = Mth.floor((double) this.getSideChatWidth() / this.getSideChatScale());
 
-        List<GuiMessage<FormattedCharSequence>> outputChatLines =
-                ComponentRenderUtils.wrapComponents(message, i, this.minecraft.font)
-                        .stream()
-                        .map(iTextComponent -> new GuiMessage<>(updateCounter, iTextComponent, chatLineId))
-                        .collect(Collectors.toList());
-        Collections.reverse(outputChatLines);
-        sideVisibleMessages.addAll(0, outputChatLines);
+        List<FormattedCharSequence> list = ComponentRenderUtils.wrapComponents(message, i, this.minecraft.font);
+        for(int k = 0; k < list.size(); ++k) {
+            FormattedCharSequence formattedCharSequence = list.get(k);
+
+            boolean bl3 = k == list.size() - 1;
+            sideVisibleMessages.add(0, new GuiMessage.Line(chatLineId, formattedCharSequence, guiMessageTag, bl3));
+
+        }
     }
 
-    @Inject(method = "removeById", at = @At("TAIL"))
-    private void removeById(int messageId, CallbackInfo ci) {
-        this.sideVisibleMessages.removeIf((message) ->
-                message.getId() == messageId
-        );
-    }
-
-    @Inject(method = "clearMessages", at = @At("HEAD"))
-    private void clearMessages(CallbackInfo ci) {
+    @Inject(method = "rescaleChat", at = @At("HEAD"))
+    private void rescaleChat(CallbackInfo ci) {
         sideVisibleMessages.clear();
     }
 
@@ -305,10 +341,9 @@ public abstract class MixinChatComponent {
                     if (adjustedY < (double) (9 * size + size)) {
                         int line = (int) (adjustedY / 9.0D + (double) sideScrolledLines);
                         if (line >= 0 && line < this.sideVisibleMessages.size()) {
-                            GuiMessage<FormattedCharSequence> chatHudLine = this.sideVisibleMessages.get(
-                                    line);
+                            GuiMessage.Line chatHudLine = this.sideVisibleMessages.get(line);
                             cir.setReturnValue(this.minecraft.font.getSplitter()
-                                    .componentStyleAtWidth(chatHudLine.getMessage(), (int) adjustedX));
+                                    .componentStyleAtWidth(chatHudLine.content(), (int) adjustedX));
                         }
                     }
                 }
@@ -317,7 +352,7 @@ public abstract class MixinChatComponent {
     }
 
     @Inject(method = "resetChatScroll", at = @At("TAIL"))
-    private void resetScroll(CallbackInfo ci) {
+    private void resetChatScroll(CallbackInfo ci) {
         sideScrolledLines = 0;
     }
 
