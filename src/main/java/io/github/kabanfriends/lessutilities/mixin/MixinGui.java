@@ -2,10 +2,10 @@ package io.github.kabanfriends.lessutilities.mixin;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.kabanfriends.lessutilities.LessUtilities;
 import io.github.kabanfriends.lessutilities.screen.CPUUsageText;
 import io.github.kabanfriends.lessutilities.utils.ItemUtils;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -13,7 +13,9 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -24,6 +26,7 @@ import java.util.Map;
 @Mixin(Gui.class)
 public class MixinGui {
 
+    @Shadow @Final private Minecraft minecraft;
     private static final Map<String, MutableComponent> scopes = new HashMap<>();
 
     static {
@@ -40,7 +43,7 @@ public class MixinGui {
     private JsonObject varItemNbt;
 
     @Inject(method = "renderSelectedItemName", at = @At("HEAD"), cancellable = true)
-    public void renderHeldItemTooltip(PoseStack stack, CallbackInfo callbackInfo) {
+    public void renderHeldItemTooltip(GuiGraphics graphics, CallbackInfo callbackInfo) {
         try {
             ItemStack itemStack = mc.player.getMainHandItem();
 
@@ -80,10 +83,8 @@ public class MixinGui {
                         scope.getString())) / 2;
                 int y2 = mc.getWindow().getGuiScaledHeight() - 35;
 
-                mc.font.drawShadow(stack, Component.literal(name), (float) x1,
-                        (float) y1, 16777215);
-                mc.font.drawShadow(stack, scope, (float) x2, (float) y2,
-                        16777215);
+                graphics.drawString(mc.font, Component.literal(name), x1, y1, 16777215);
+                graphics.drawString(mc.font, scope, x2, y2, 16777215);
             }
 
         } catch (Exception e) {
@@ -92,8 +93,8 @@ public class MixinGui {
     }
 
     @Inject(method = "renderEffects", at = @At("HEAD"))
-    public void onRenderEffects(PoseStack stack, CallbackInfo ci) {
-        CPUUsageText.onRender(stack);
+    public void onRenderEffects(GuiGraphics graphics, CallbackInfo ci) {
+        CPUUsageText.onRender(graphics);
     }
 
 }

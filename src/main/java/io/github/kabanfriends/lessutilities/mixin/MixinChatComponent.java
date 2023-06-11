@@ -5,12 +5,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 
 import java.util.*;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.kabanfriends.lessutilities.config.Config;
 import io.github.kabanfriends.lessutilities.sidedchat.ChatRule;
 import net.minecraft.client.GuiMessage;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.ComponentRenderUtils;
 import net.minecraft.network.chat.Component;
@@ -26,8 +26,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import static net.minecraft.client.gui.GuiComponent.fill;
 
 @Mixin(ChatComponent.class)
 public abstract class MixinChatComponent {
@@ -93,16 +91,16 @@ public abstract class MixinChatComponent {
     public abstract double screenToChatY(double d);
 
     @Shadow
-    public abstract void drawTagIcon(PoseStack poseStack, int x, int y, GuiMessageTag.Icon icon);
+    public abstract void drawTagIcon(GuiGraphics guiGraphics, int i, int j, GuiMessageTag.Icon icon);
 
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
-    private void render(PoseStack poseStack, int tickDelta, int j, int k, CallbackInfo ci) {
+    private void render(GuiGraphics graphics, int tickDelta, int j, int k, CallbackInfo ci) {
         if (!this.isChatHidden()) {
-            int renderedLines = renderChat(poseStack, tickDelta, j, k, trimmedMessages, 0, getWidth(),
+            int renderedLines = renderChat(graphics, tickDelta, j, k, trimmedMessages, 0, getWidth(),
                     chatScrollbarPos, true);
-            renderChat(poseStack, tickDelta, j, k, sideVisibleMessages, getSideChatStartX(),
+            renderChat(graphics, tickDelta, j, k, sideVisibleMessages, getSideChatStartX(),
                     getSideChatWidth(), sideScrolledLines, false);
-            renderOthers(poseStack, renderedLines);
+            renderOthers(graphics, renderedLines);
         }
         ci.cancel();
     }
@@ -117,7 +115,7 @@ public abstract class MixinChatComponent {
      * @return The amount of lines actually rendered. Other parts of rendering need to know this
      */
     @SuppressWarnings("deprecation")
-    private int renderChat(PoseStack poseStack, int i, int j, int k, List<GuiMessage.Line> visibleMessages, int displayX, int width, int scrolledLines, boolean renderTags) {
+    private int renderChat(GuiGraphics graphics, int i, int j, int k, List<GuiMessage.Line> visibleMessages, int displayX, int width, int scrolledLines, boolean renderTags) {
         // reset chat (re-allign all text) whenever calculated size for side chat changes
         int newSideChatWidth = getSideChatWidth();
         if (newSideChatWidth != oldSideChatWidth) {
@@ -133,9 +131,9 @@ public abstract class MixinChatComponent {
             float f = (float)this.getScale();
             int n = Mth.ceil((float)width / f);
             int o = this.minecraft.getWindow().getGuiScaledHeight();
-            poseStack.pushPose();
-            poseStack.scale(f, f, 1.0F);
-            poseStack.translate(4.0F, 0.0F, 0.0F);
+            graphics.pose().pushPose();
+            graphics.pose().scale(f, f, 1.0F);
+            graphics.pose().translate(4.0F, 0.0F, 0.0F);
             int p = Mth.floor((float)(o - 40) / f);
             int q = this.getMessageEndIndexAt(this.screenToChatX(j), this.screenToChatY(k));
             double d = this.minecraft.options.chatOpacity().get();
@@ -162,41 +160,41 @@ public abstract class MixinChatComponent {
                             boolean z = false;
                             aa = p - u * r;
                             int ab = aa + s;
-                            poseStack.pushPose();
-                            poseStack.translate(displayX, 0.0F, 50.0F);
+                            graphics.pose().pushPose();
+                            graphics.pose().translate(displayX, 0.0F, 50.0F);
 
                             int fillX = renderTags ? -4 : -2;
-                            fill(poseStack, fillX, aa - r, 0 + n + 4 + 4, aa, y << 24);
+                            graphics.fill(fillX, aa - r, 0 + n + 4 + 4, aa, y << 24);
                             if (renderTags) {
                                 GuiMessageTag guiMessageTag = line.tag();
                                 if (guiMessageTag != null) {
                                     int ac = guiMessageTag.indicatorColor() | x << 24;
-                                    fill(poseStack, -4, aa - r, -2, aa, ac);
+                                    graphics.fill(-4, aa - r, -2, aa, ac);
                                     if (v == q && guiMessageTag.icon() != null) {
                                         int ad = this.getTagIconLeft(line);
                                         Objects.requireNonNull(this.minecraft.font);
                                         int ae = ab + 9;
-                                        this.drawTagIcon(poseStack, ad, ae, guiMessageTag.icon());
+                                        this.drawTagIcon(graphics, ad, ae, guiMessageTag.icon());
                                     }
                                 }
                             }
 
                             RenderSystem.enableBlend();
-                            poseStack.translate(0.0F, 0.0F, 50.0F);
-                            this.minecraft.font.drawShadow(poseStack, line.content(), 0.0F, (float)ab, 16777215 + (x << 24));
+                            graphics.pose().translate(0.0F, 0.0F, 50.0F);
+                            graphics.drawString(this.minecraft.font, line.content(), 0, ab, 16777215 + (x << 24));
                             RenderSystem.disableBlend();
-                            poseStack.popPose();
+                            graphics.pose().popPose();
                         }
                     }
                 }
             }
-            poseStack.popPose();
+            graphics.pose().popPose();
         }
         return renderedLines;
     }
 
     @SuppressWarnings("deprecation")
-    private void renderOthers(PoseStack matrices, int renderedLines) {
+    private void renderOthers(GuiGraphics graphics, int renderedLines) {
         int visibleMessagesSize = this.trimmedMessages.size();
         if (visibleMessagesSize == 0) {
             return;
@@ -205,9 +203,9 @@ public abstract class MixinChatComponent {
 
         float chatScale = (float) this.getScale();
         int k = Mth.ceil((double) this.getWidth() / chatScale);
-        matrices.pushPose();
-        matrices.scale(chatScale, chatScale, 1.0f);
-        matrices.translate(4.0F, 0.0F, 0.0F);
+        graphics.pose().pushPose();
+        graphics.pose().scale(chatScale, chatScale, 1.0f);
+        graphics.pose().translate(4.0F, 0.0F, 0.0F);
         double opacity = this.minecraft.options.chatOpacity().get();
         double backgroundOpacity = this.minecraft.options.textBackgroundOpacity().get();
 
@@ -215,15 +213,15 @@ public abstract class MixinChatComponent {
         if (queueSize > 0L) {
             int m = (int) (128.0D * opacity);
             int w = (int) (255.0D * backgroundOpacity);
-            matrices.pushPose();
-            matrices.translate(0.0F, 0.0F, 50.0F);
-            fill(matrices, -2, 0, k + 4, 9, w << 24);
+            graphics.pose().pushPose();
+            graphics.pose().translate(0.0F, 0.0F, 50.0F);
+            graphics.fill(-2, 0, k + 4, 9, w << 24);
             RenderSystem.enableBlend();
-            matrices.translate(0.0F, 0.0F, 50.0F);
-            this.minecraft.font.drawShadow(matrices,
-                    Component.translatable("chat.queue", queueSize), 0.0F, 1.0F,
+            graphics.pose().translate(0.0F, 0.0F, 50.0F);
+            graphics.drawString(this.minecraft.font,
+                    Component.translatable("chat.queue", queueSize), 0, 1,
                     16777215 + (m << 24));
-            matrices.popPose();
+            graphics.pose().popPose();
             RenderSystem.disableBlend();
         }
 
@@ -237,12 +235,12 @@ public abstract class MixinChatComponent {
                 int aa = y > 0 ? 170 : 96;
                 int ab = this.newMessageSinceScroll ? 13382451 : 3355562;
                 int ac = k + 4;
-                fill(matrices, ac, -y, ac + 2, -y - z, ab + (aa << 24));
-                fill(matrices, ac, -y, ac + 1, -y - z, 13421772 + (aa << 24));
+                graphics.fill(ac, -y, ac + 2, -y - z, ab + (aa << 24));
+                graphics.fill(ac, -y, ac + 1, -y - z, 13421772 + (aa << 24));
             }
         }
 
-        matrices.popPose();
+        graphics.pose().popPose();
     }
 
     private int getSideChatStartX() {

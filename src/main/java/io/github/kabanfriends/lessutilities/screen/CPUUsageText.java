@@ -3,10 +3,10 @@ package io.github.kabanfriends.lessutilities.screen;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.kabanfriends.lessutilities.LessUtilities;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
 
@@ -51,7 +51,7 @@ public class CPUUsageText {
         lastUpdate = System.currentTimeMillis();
     }
 
-    public static void onRender(PoseStack stack) {
+    public static void onRender(GuiGraphics graphics) {
 
         if (barsText == null || numberText == null) return;
         if ((System.currentTimeMillis() - lastUpdate) > 1200) {
@@ -64,20 +64,20 @@ public class CPUUsageText {
         hasLagSlayer = true;
 
         try {
-            renderText(stack, ChatFormatting.GOLD.getColor());
-            renderText(stack, barsText, 2);
-            renderText(stack, numberText, 1);
+            renderText(graphics, ChatFormatting.GOLD.getColor());
+            renderText(graphics, barsText, 2);
+            renderText(graphics, numberText, 1);
         } catch (Exception e) {
             LessUtilities.LOGGER.error("Error while trying to render LagSlayer HUD!");
             e.printStackTrace();
         }
     }
 
-    private static void renderText(PoseStack stack, Component text, int line) {
-        font.draw(stack, text, 5, mainWindow.getGuiScaledHeight() - (font.lineHeight * line), 0xffffff);
+    private static void renderText(GuiGraphics graphics, Component text, int line) {
+        graphics.drawString(LessUtilities.MC.font, text, 5, mainWindow.getGuiScaledHeight() - (font.lineHeight * line), 0xffffff);
     }
 
-    private static void renderText(PoseStack stack, int color) {
-        font.draw(stack, "CPU Usage:", 5, mainWindow.getGuiScaledHeight() - (font.lineHeight * 3), color);
+    private static void renderText(GuiGraphics graphics, int color) {
+        graphics.drawString(LessUtilities.MC.font, "CPU Usage:", 5, mainWindow.getGuiScaledHeight() - (font.lineHeight * 3), color);
     }
 }
