@@ -1,5 +1,5 @@
 # LessUtilities
-This is basically [CodeUtilities](https://codeutilities.github.io/) but I ported only the features I mainly use to Minecraft 1.18.2:
+This is basically [CodeUtilities](https://codeutilities.github.io/) but I ported only the features I mainly use to Minecraft 1.20:
 - /nbs
 - /schem
 - Side Chat
