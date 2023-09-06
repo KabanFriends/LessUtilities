@@ -54,8 +54,9 @@ public class MixinClientPacketListener {
         }
     }
 
-    @Inject(method = "handleResourcePack", at = @At("HEAD"))
+    @Inject(method = "handleResourcePack", at = @At("HEAD"), cancellable = true)
     public void lessutilities$resetServerPack(ClientboundResourcePackPacket packet, CallbackInfo ci) {
+        if (true) return; //FIXME: this does not work
         if (packet.getHash().equals(DEFAULT_PACK_SHA1)) {
             LessUtilities.MC.getDownloadedPackSource().clearServerPack();
             ci.cancel();
