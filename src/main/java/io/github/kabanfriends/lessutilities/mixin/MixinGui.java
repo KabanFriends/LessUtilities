@@ -12,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,13 +21,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
 @Mixin(Gui.class)
 public class MixinGui {
 
-    @Shadow @Final private Minecraft minecraft;
     private static final Map<String, MutableComponent> scopes = new HashMap<>();
 
     static {
@@ -36,6 +37,8 @@ public class MixinGui {
                 Component.literal("SAVE").withStyle((style) -> style.withColor(ChatFormatting.YELLOW)));
         scopes.put("local",
                 Component.literal("LOCAL").withStyle((style) -> style.withColor(ChatFormatting.GREEN)));
+        scopes.put("line",
+                Component.literal("LINE").withStyle((style) -> style.withColor(TextColor.fromRgb(new Color(85, 170, 255).getRGB()))));
     }
 
     private final Minecraft mc = LessUtilities.MC;
@@ -43,7 +46,7 @@ public class MixinGui {
     private JsonObject varItemNbt;
 
     @Inject(method = "renderSelectedItemName", at = @At("HEAD"), cancellable = true)
-    public void renderHeldItemTooltip(GuiGraphics graphics, CallbackInfo callbackInfo) {
+    public void lessutilities$renderHeldItemTooltip(GuiGraphics graphics, CallbackInfo callbackInfo) {
         try {
             ItemStack itemStack = mc.player.getMainHandItem();
 
@@ -70,10 +73,14 @@ public class MixinGui {
             }
 
             if (variableStack != null) {
-                callbackInfo.cancel();
-
                 String name = varItemNbt.get("name").getAsString();
                 MutableComponent scope = scopes.get(varItemNbt.get("scope").getAsString());
+
+                if (scope == null) {
+                    return;
+                }
+
+                callbackInfo.cancel();
 
                 int x1 = (mc.getWindow().getGuiScaledWidth() - mc.font.width(
                         Component.literal(name))) / 2;
@@ -93,7 +100,7 @@ public class MixinGui {
     }
 
     @Inject(method = "renderEffects", at = @At("HEAD"))
-    public void onRenderEffects(GuiGraphics graphics, CallbackInfo ci) {
+    public void lessutilities$onRenderEffects(GuiGraphics graphics, CallbackInfo ci) {
         CPUUsageText.onRender(graphics);
     }
 

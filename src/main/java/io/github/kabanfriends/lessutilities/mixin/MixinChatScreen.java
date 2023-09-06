@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 public class MixinChatScreen {
 
     @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V"), index = 4)
-    private int getTextboxColour(int defaultColour) {
+    private int lessutilities$getTextboxColour(int defaultColour) {
         ChatShortcut currentChatShortcut = ChatShortcut.getCurrentChatShortcut();
 
         // if there is one active - use it
@@ -22,7 +22,7 @@ public class MixinChatScreen {
     }
 
     @ModifyArg(method = "keyPressed", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/ChatScreen;handleChatInput(Ljava/lang/String;Z)Z"), index = 0)
-    private String insertPrefix(String interceptedMessage) {
+    private String lessutilities$insertPrefix(String interceptedMessage) {
         ChatShortcut currentChatShortcut = ChatShortcut.getCurrentChatShortcut();
 
         if (currentChatShortcut != null) {

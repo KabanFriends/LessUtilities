@@ -94,7 +94,7 @@ public abstract class MixinChatComponent {
     public abstract void drawTagIcon(GuiGraphics guiGraphics, int i, int j, GuiMessageTag.Icon icon);
 
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
-    private void render(GuiGraphics graphics, int tickDelta, int j, int k, CallbackInfo ci) {
+    private void lessutilities$render(GuiGraphics graphics, int tickDelta, int j, int k, CallbackInfo ci) {
         if (!this.isChatHidden()) {
             int renderedLines = renderChat(graphics, tickDelta, j, k, trimmedMessages, 0, getWidth(),
                     chatScrollbarPos, true);
@@ -270,13 +270,13 @@ public abstract class MixinChatComponent {
     }
 
     @Inject(method = "clearMessages", at = @At("TAIL"))
-    private void clearMessages(boolean clearHistory, CallbackInfo ci) {
+    private void lessutilities$clearMessages(boolean clearHistory, CallbackInfo ci) {
         sideVisibleMessages.clear();
     }
 
 
     @Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V", at = @At("TAIL"))
-    private void addMessage(Component component, MessageSignature messageSignature, int messageId, GuiMessageTag guiMessageTag, boolean refresh, CallbackInfo ci) {
+    private void lessutilities$addMessage(Component component, MessageSignature messageSignature, int messageId, GuiMessageTag guiMessageTag, boolean refresh, CallbackInfo ci) {
         boolean matchedARule = false;
         if (Config.getConfig().useSideChat) {
             for (ChatRule chatRule : ChatRule.getChatRules()) {
@@ -316,7 +316,7 @@ public abstract class MixinChatComponent {
     }
 
     @Inject(method = "rescaleChat", at = @At("HEAD"))
-    private void rescaleChat(CallbackInfo ci) {
+    private void lessutilities$rescaleChat(CallbackInfo ci) {
         sideVisibleMessages.clear();
     }
 
@@ -324,7 +324,7 @@ public abstract class MixinChatComponent {
     // the main difference is switching references from main to side chat
     // and subtracting getSideChatStartX() from the adjusted x
     @Inject(method = "getClickedComponentStyleAt", at = @At("HEAD"), cancellable = true)
-    private void getClickedComponentStyleAt(double x, double y, CallbackInfoReturnable<Style> cir) {
+    private void lessutilities$getClickedComponentStyleAt(double x, double y, CallbackInfoReturnable<Style> cir) {
         if (this.isChatFocused() && !this.minecraft.options.hideGui && !this.isChatHidden()) {
             double scale = this.getSideChatScale();
             double adjustedX = (x - 2.0D) - getSideChatStartX();
@@ -350,12 +350,12 @@ public abstract class MixinChatComponent {
     }
 
     @Inject(method = "resetChatScroll", at = @At("TAIL"))
-    private void resetChatScroll(CallbackInfo ci) {
+    private void lessutilities$resetChatScroll(CallbackInfo ci) {
         sideScrolledLines = 0;
     }
 
     @Inject(method = "scrollChat", at = @At("TAIL"))
-    private void scrollChat(int amount, CallbackInfo ci) {
+    private void lessutilities$scrollChat(int amount, CallbackInfo ci) {
         sideScrolledLines = (int) ((double) this.chatScrollbarPos + amount);
         int i = this.sideVisibleMessages.size();
         if (sideScrolledLines > i - this.getLinesPerPage()) {

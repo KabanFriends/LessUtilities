@@ -7,9 +7,11 @@ import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundResourcePackPacket;
 import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -17,8 +19,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientPacketListener.class)
 public class MixinClientPacketListener {
 
+    @Unique
+    private static final String DEFAULT_PACK_SHA1 = "8889a2049b89ee3ee85b8b9a505a197094bcde91";
+
     @Inject(method = "handleSystemChat", at = @At("HEAD"))
-    public void onChatMessage(ClientboundSystemChatPacket packet, CallbackInfo ci) {
+    public void lessutilities$onChatMessage(ClientboundSystemChatPacket packet, CallbackInfo ci) {
         if (!RenderSystem.isOnRenderThread()) {
             return;
         }
@@ -35,8 +40,8 @@ public class MixinClientPacketListener {
         }
     }
 
-    @Inject(method = "setActionBarText", at = @At("HEAD"))
-    public void onActionBar(ClientboundSetActionBarTextPacket packet, CallbackInfo ci) {
+    @Inject(method = "setActionBarText", at = @At("HEAD"), cancellable = true)
+    public void lessutilities$onActionBar(ClientboundSetActionBarTextPacket packet, CallbackInfo ci) {
         if (!RenderSystem.isOnRenderThread()) {
             return;
         }
@@ -45,6 +50,14 @@ public class MixinClientPacketListener {
         }
         if (packet.getText().getString().matches("^CPU Usage: \\[▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮\\] \\(.*%\\)$")) {
             CPUUsageText.updateCPU(packet);
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "handleResourcePack", at = @At("HEAD"))
+    public void lessutilities$resetServerPack(ClientboundResourcePackPacket packet, CallbackInfo ci) {
+        if (packet.getHash().equals(DEFAULT_PACK_SHA1)) {
+            LessUtilities.MC.getDownloadedPackSource().clearServerPack();
             ci.cancel();
         }
     }
