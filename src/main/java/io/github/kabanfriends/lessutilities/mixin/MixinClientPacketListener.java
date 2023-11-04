@@ -7,7 +7,7 @@ import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundResourcePackPacket;
+import net.minecraft.network.protocol.common.ClientboundResourcePackPacket;
 import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import org.spongepowered.asm.mixin.Mixin;
@@ -50,15 +50,6 @@ public class MixinClientPacketListener {
         }
         if (packet.getText().getString().matches("^CPU Usage: \\[▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮\\] \\(.*%\\)$")) {
             CPUUsageText.updateCPU(packet);
-            ci.cancel();
-        }
-    }
-
-    @Inject(method = "handleResourcePack", at = @At("HEAD"), cancellable = true)
-    public void lessutilities$resetServerPack(ClientboundResourcePackPacket packet, CallbackInfo ci) {
-        if (true) return; //FIXME: this does not work
-        if (packet.getHash().equals(DEFAULT_PACK_SHA1)) {
-            LessUtilities.MC.getDownloadedPackSource().clearServerPack();
             ci.cancel();
         }
     }
