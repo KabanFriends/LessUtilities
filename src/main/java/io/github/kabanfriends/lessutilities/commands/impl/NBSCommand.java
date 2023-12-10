@@ -49,12 +49,12 @@ public class NBSCommand extends Command {
                     stack.setHoverName(Component.literal("§5SONG§7 -§f " + d.getName()));
                 }
 
-                ToasterUtils.sendToaster("NBS Loaded!", fileName, SystemToast.SystemToastIds.NARRATOR_TOGGLE);
+                ToasterUtils.sendToaster("NBS Loaded!", fileName, SystemToast.SystemToastId.NARRATOR_TOGGLE);
                 ItemUtil.giveCreativeItem(stack, true);
             } catch (OutdatedNBSException e) {
-                ToasterUtils.sendToaster("§cLoading Error!", "Unsupported file version", SystemToast.SystemToastIds.PACK_LOAD_FAILURE);
+                ToasterUtils.sendToaster("§cLoading Error!", "Unsupported file version", SystemToast.SystemToastId.PACK_LOAD_FAILURE);
             } catch (IOException e) {
-                ToasterUtils.sendToaster("§cLoading Error!", "Invalid file", SystemToast.SystemToastIds.PACK_LOAD_FAILURE);
+                ToasterUtils.sendToaster("§cLoading Error!", "Invalid file", SystemToast.SystemToastId.PACK_LOAD_FAILURE);
             }
         });
     }

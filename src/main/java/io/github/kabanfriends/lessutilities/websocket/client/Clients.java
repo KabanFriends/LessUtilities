@@ -39,7 +39,7 @@ public class Clients {
 
             if (player.isCreative()) {
                 ItemUtils.giveCreativeItem(item.getItem(itemData), true);
-                ToasterUtils.sendToaster("Received Item!", source, SystemToast.SystemToastIds.NARRATOR_TOGGLE);
+                ToasterUtils.sendToaster("Received Item!", source, SystemToast.SystemToastId.NARRATOR_TOGGLE);
                 player.playSound(SoundEvents.ITEM_PICKUP, 200, 1);
                 result.addProperty("status", "success");
             } else {

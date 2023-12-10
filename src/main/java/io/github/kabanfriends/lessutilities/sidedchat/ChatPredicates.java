@@ -27,18 +27,18 @@ public class ChatPredicates {
             new ChatPattern.ChatComponent("] ",TextColor.fromLegacyFormat(ChatFormatting.GOLD))
     );
     private static final ChatPattern messageChatPattern = new ChatPattern(
-            new ChatPattern.ChatComponent("[", TextColor.parseColor("#FF7F55"),0),
+            new ChatPattern.ChatComponent("[", TextColor.parseColor("#FF7F55").getOrThrow(true, s -> {}),0),
             new ChatPattern.ChatComponent(null,TextColor.fromLegacyFormat(ChatFormatting.AQUA)),
-            new ChatPattern.ChatComponent(" → ",TextColor.parseColor("#FF7F55")),
-            new ChatPattern.ChatComponent(null,TextColor.parseColor("#FFD47F")),
-            new ChatPattern.ChatComponent("] ",TextColor.parseColor("#FF7F55"))
+            new ChatPattern.ChatComponent(" → ",TextColor.parseColor("#FF7F55").getOrThrow(true, s -> {})),
+            new ChatPattern.ChatComponent(null,TextColor.parseColor("#FFD47F").getOrThrow(true, s -> {})),
+            new ChatPattern.ChatComponent("] ",TextColor.parseColor("#FF7F55").getOrThrow(true, s -> {}))
     );
     private static final ChatPattern messageChatPattern2 = new ChatPattern(
-            new ChatPattern.ChatComponent("[", TextColor.parseColor("#FF7F55"),0),
-            new ChatPattern.ChatComponent(null,TextColor.parseColor("#FFD47F")),
-            new ChatPattern.ChatComponent(" → ",TextColor.parseColor("#FF7F55")),
+            new ChatPattern.ChatComponent("[", TextColor.parseColor("#FF7F55").getOrThrow(true, s -> {}),0),
+            new ChatPattern.ChatComponent(null,TextColor.parseColor("#FFD47F").getOrThrow(true, s -> {})),
+            new ChatPattern.ChatComponent(" → ",TextColor.parseColor("#FF7F55").getOrThrow(true, s -> {})),
             new ChatPattern.ChatComponent(null,TextColor.fromLegacyFormat(ChatFormatting.AQUA)),
-            new ChatPattern.ChatComponent("] ",TextColor.parseColor("#FF7F55"))
+            new ChatPattern.ChatComponent("] ",TextColor.parseColor("#FF7F55").getOrThrow(true, s -> {}))
     );
     public static Predicate<Component> getMessagePredicate() {
         return iTextComponent -> {

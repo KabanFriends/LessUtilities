@@ -125,7 +125,7 @@ public class SchemCommand extends Command {
                                             MessageUtils.sendMessage("§a[Schem2DF] The file has successfully been loaded!");
                                             MessageUtils.sendMessage("§b[Schem2DF] Connect all Code Templates together, and use it with §dSchem2DF Builder§b.");
                                             MessageUtils.sendMessage("§b[Schem2DF] Schem2DF Builder can be obtained with §d/schem builder§b.");
-                                            ToasterUtils.sendToaster("Structure File Loaded!", finalFile.getName(), SystemToast.SystemToastIds.NARRATOR_TOGGLE);
+                                            ToasterUtils.sendToaster("Structure File Loaded!", finalFile.getName(), SystemToast.SystemToastId.NARRATOR_TOGGLE);
                                         } catch (Exception e) {
                                             MessageUtils.sendMessage("§cAn error occurred while executing this command.");
                                             e.printStackTrace();
